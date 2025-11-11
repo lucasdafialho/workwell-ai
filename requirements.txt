@@ -1,0 +1,89 @@
+# Core ML/DL Libraries
+torch>=2.0.0
+tensorflow>=2.13.0
+scikit-learn>=1.3.0
+numpy>=1.24.0
+pandas>=2.0.0
+
+# NLP Libraries
+transformers>=4.30.0
+sentencepiece>=0.1.99
+tokenizers>=0.13.0
+langchain>=0.0.200
+langchain-google-genai>=0.0.5
+openai>=1.0.0
+
+# Computer Vision
+opencv-python>=4.8.0
+mediapipe>=0.10.0
+Pillow>=10.0.0
+
+# Time Series
+prophet>=1.1.4
+statsmodels>=0.14.0
+
+# API Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.4.0
+pydantic-settings>=2.0.0
+
+# Data Processing
+scipy>=1.11.0
+imbalanced-learn>=0.11.0
+nltk>=3.8.1
+spacy>=3.7.0
+
+# MLOps
+mlflow>=2.8.0
+wandb>=0.15.0
+
+# Explainability
+shap>=0.42.0
+lime>=0.2.0.1
+
+# Database & Caching
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.9
+redis>=5.0.0
+pymongo>=4.5.0
+
+# Visualization
+plotly>=5.17.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+dash>=2.14.0
+
+# Privacy & Security
+diffprivlib>=0.6.0
+cryptography>=41.0.0
+
+# IoT & Streaming
+kafka-python>=2.0.2
+paho-mqtt>=1.6.1
+
+# Utilities
+python-dotenv>=1.0.0
+httpx>=0.25.0
+aiohttp>=3.9.0
+python-multipart>=0.0.6
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+
+# Notebooks
+jupyter>=1.0.0
+ipykernel>=6.25.0
+ipywidgets>=8.1.0
+
+# Monitoring
+prometheus-client>=0.18.0
+
+# Portuguese NLP Models (download separately)
+# python -m spacy download pt_core_news_sm
+# python -m nltk.downloader punkt stopwords
+
