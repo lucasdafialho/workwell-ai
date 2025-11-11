@@ -19,10 +19,8 @@ Sistema inteligente de prevenção de burnout e otimização de bem-estar corpor
 - [MLOps e Monitoramento](#mlops-e-monitoramento)
 - [Privacidade e Segurança](#privacidade-e-segurança)
 - [Troubleshooting](#troubleshooting)
-- [Roadmap](#roadmap)
 - [Documentação](#documentação)
 - [Integração](#integração)
-- [Contribuindo](#contribuindo)
 - [Licença](#licença)
 
 ## Sobre o Projeto
@@ -59,7 +57,7 @@ O burnout afeta milhões de profissionais globalmente, custando bilhões em prod
 - Detecção de linguagem indicativa de burnout e depressão
 
 ### IA Generativa
-- Chatbot de suporte emocional com Gemini 1.5 Pro
+- Chatbot de suporte emocional com Gemini 2.5 Flash Lite
 - RAG (Retrieval-Augmented Generation) com base de conhecimento em saúde mental
 - Respostas empáticas e contextualmente apropriadas
 
@@ -664,7 +662,7 @@ forecast = forecaster.predict(user_id=123, periods=30)
 #   "forecast": [7.2, 7.1, 6.8, ...],
 #   "lower_bound": [6.5, 6.4, 6.1, ...],
 #   "upper_bound": [7.9, 7.8, 7.5, ...],
-#   "critical_periods": ["2024-02-15", "2024-03-01"]
+#   "critical_periods": ["2025-02-15", "2025-03-01"]
 # }
 ```
 
@@ -800,7 +798,7 @@ Resposta:
       "expected_impact": 0.25
     }
   ],
-  "timestamp": "2024-01-15T10:30:00Z"
+  "timestamp": "2025-01-15T10:30:00Z"
 }
 ```
 
@@ -865,7 +863,7 @@ Resposta:
       "reason": "You've been sitting for 2+ hours"
     }
   ],
-  "timestamp": "2024-01-15T10:30:00Z"
+  "timestamp": "2025-01-15T10:30:00Z"
 }
 ```
 
@@ -912,7 +910,7 @@ Resposta:
 ```json
 {
   "status": "healthy",
-  "timestamp": "2024-01-15T10:30:00Z",
+  "timestamp": "2025-01-15T10:30:00Z",
   "version": "1.0.0",
   "services": {
     "api": "up",
@@ -924,12 +922,12 @@ Resposta:
     "burnout_predictor": {
       "loaded": true,
       "version": "v1.2.3",
-      "last_trained": "2024-01-10T08:00:00Z"
+      "last_trained": "2025-01-10T08:00:00Z"
     },
     "sentiment_analyzer": {
       "loaded": true,
       "version": "v1.1.0",
-      "last_trained": "2024-01-12T10:00:00Z"
+      "last_trained": "2025-01-12T10:00:00Z"
     }
   }
 }
@@ -1183,43 +1181,6 @@ docker-compose logs -f --tail=100
 curl http://localhost:8000/health
 ```
 
-## Roadmap
-
-### Q1 2024
-- [x] Implementação de modelos base
-- [x] API REST funcional
-- [x] Integração com backend .NET
-- [ ] Deploy em ambiente de staging
-- [ ] Testes A/B com usuários piloto
-
-### Q2 2024
-- [ ] Modelo de detecção de burnout em tempo real
-- [ ] Integração com wearables (smartwatches)
-- [ ] Dashboard analytics para RH
-- [ ] Mobile SDK (React Native)
-- [ ] Suporte a múltiplos idiomas
-
-### Q3 2024
-- [ ] AutoML para personalização de modelos
-- [ ] Reinforcement Learning para recomendações
-- [ ] Análise de voz (tone analysis)
-- [ ] Integração com calendários (Google/Outlook)
-- [ ] Gamificação e recompensas
-
-### Q4 2024
-- [ ] Multi-tenancy support
-- [ ] White-label solution
-- [ ] Advanced analytics e BI
-- [ ] Certificação ISO 27001
-- [ ] Expansão internacional
-
-### Futuro
-- Análise de padrões de equipe (team burnout)
-- Integração com ERPs corporativos
-- Modelos específicos por indústria
-- Blockchain para auditoria de privacidade
-- AGI research para terapia personalizada
-
 ## Documentação
 
 ### Documentos Principais
@@ -1275,7 +1236,7 @@ O sistema suporta webhooks para notificações assíncronas:
   "data": {
     "risk_level": 0.85,
     "confidence": 0.91,
-    "timestamp": "2024-01-15T10:30:00Z"
+    "timestamp": "2025-01-15T10:30:00Z"
   },
   "webhook_url": "https://backend.workwell.com/api/webhooks/ai"
 }
@@ -1302,63 +1263,11 @@ recommendations = client.get_recommendations(user_id=123, top_k=5)
 response = client.chat(user_id=123, message="Como lidar com estresse?")
 ```
 
-## Contribuindo
-
-Contribuições são bem-vindas! Por favor, siga as diretrizes:
-
-### Como Contribuir
-
-1. Fork o repositório
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
-
-### Guidelines
-
-- Seguir PEP 8 para código Python
-- Adicionar testes para novas funcionalidades
-- Atualizar documentação quando necessário
-- Manter cobertura de testes > 80%
-- Code review obrigatório antes de merge
-
-### Testes
-
-```bash
-# Executar todos os testes
-pytest
-
-# Com cobertura
-pytest --cov=. --cov-report=html
-
-# Apenas testes unitários
-pytest tests/unit/
-
-# Com marcadores
-pytest -m "not slow"
-```
-
-### Linting
-
-```bash
-# Black (formatting)
-black .
-
-# Flake8 (linting)
-flake8 .
-
-# MyPy (type checking)
-mypy .
-
-# isort (import sorting)
-isort .
-```
-
 ## Licença
 
 Este projeto faz parte do sistema WorkWell desenvolvido para FIAP - Faculdade de Informática e Administração Paulista.
 
-**Trabalho Acadêmico** - 2024
+**Trabalho Acadêmico** - 2025
 
 ### Equipe
 
@@ -1372,6 +1281,6 @@ FIAP - Faculdade de Informática e Administração Paulista
 
 ---
 
-**Nota**: Este é um projeto acadêmico desenvolvido como parte do curso de pós-graduação em Inteligência Artificial da FIAP. Não deve ser usado em ambiente de produção sem a devida auditoria de segurança e privacidade.
+**Nota**: Este é um projeto acadêmico desenvolvido como parte da graduação em Análise e Desenvolvimento de Sistemas da FIAP. Não deve ser usado em ambiente de produção sem a devida auditoria de segurança e privacidade.
 
 Para mais informações, consulte a documentação completa ou entre em contato com a equipe de desenvolvimento.
