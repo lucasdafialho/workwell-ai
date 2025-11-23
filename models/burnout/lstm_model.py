@@ -104,7 +104,7 @@ class BurnoutPredictor:
         df["stress_ma_7d"] = (
             df.groupby("usuario_id")["nivel_stress"]
             .transform(lambda x: x.rolling(window=7, min_periods=1).mean())
-            .fillna(method="bfill")
+            .bfill()
             .fillna(base_defaults["nivel_stress"])
         )
 
@@ -179,17 +179,30 @@ class BurnoutPredictor:
 
         for _, group in df.groupby("usuario_id"):
             group = group.sort_values("data_checkin")
-            if len(group) < sequence_length:
-                continue
             feature_matrix = group[available].to_numpy(dtype=float)
-            for i in range(len(feature_matrix) - sequence_length + 1):
-                window = feature_matrix[i : i + sequence_length]
-                sequences.append(window)
+            
+            if len(group) < sequence_length:
+                if len(feature_matrix) == 0:
+                    continue
+                last_row = feature_matrix[-1]
+                padding_needed = sequence_length - len(feature_matrix)
+                padding = np.tile(last_row.reshape(1, -1), (padding_needed, 1))
+                padded = np.vstack([padding, feature_matrix])
+                sequences.append(padded)
                 if target_col in group.columns:
-                    label_value = group[target_col].iloc[i + sequence_length - 1]
+                    label_value = group[target_col].iloc[-1]
                 else:
-                    label_value = self._calculate_risk_level(group.iloc[i + sequence_length - 1])
+                    label_value = self._calculate_risk_level(group.iloc[-1])
                 labels.append(label_value)
+            else:
+                for i in range(len(feature_matrix) - sequence_length + 1):
+                    window = feature_matrix[i : i + sequence_length]
+                    sequences.append(window)
+                    if target_col in group.columns:
+                        label_value = group[target_col].iloc[i + sequence_length - 1]
+                    else:
+                        label_value = self._calculate_risk_level(group.iloc[i + sequence_length - 1])
+                    labels.append(label_value)
 
         if not sequences:
             raise ValueError("Nenhuma sequência válida foi gerada.")
@@ -345,11 +358,15 @@ class BurnoutPredictor:
 
         predicted_label = self.label_encoder.inverse_transform([predicted_index])[0]
         prob_map = {label: float(prob) for label, prob in zip(self.label_encoder.classes_, probs)}
+        
+        risk_weights = {"baixo": 0.0, "medio": 0.33, "alto": 0.66, "critico": 1.0}
+        risk_score = sum(risk_weights.get(label, 0.0) * prob for label, prob in prob_map.items())
+        
         return {
             "predicted_class": predicted_label,
             "probabilities": prob_map,
             "confidence": float(np.max(probs)),
-            "risk_score": float(np.max(probs)),
+            "risk_score": risk_score,
         }
 
     def save_model(self, path: str) -> None:

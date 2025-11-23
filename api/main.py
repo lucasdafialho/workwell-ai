@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
+from contextlib import asynccontextmanager
 import uvicorn
 from datetime import datetime
 import logging
@@ -29,20 +30,6 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(
-    title="WorkWell AI API",
-    description="API de Inteligência Artificial para prevenção de burnout e bem-estar corporativo",
-    version="1.0.0"
-)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 security = HTTPBearer()
 
 burnout_predictor = None
@@ -53,9 +40,8 @@ wellbeing_forecaster = None
 fatigue_detector = None
 
 
-@app.on_event("startup")
-async def startup_event():
-    """Inicializa serviços na startup."""
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     global burnout_predictor, sentiment_analyzer, emotional_support_ai
     global recommendation_engine, wellbeing_forecaster, fatigue_detector
     
@@ -63,7 +49,7 @@ async def startup_event():
     
     try:
         burnout_predictor = BurnoutPredictor()
-        model_path = "models/storage/best_burnout_model.pt"
+        model_path = os.path.join(Path(__file__).parent.parent, "pipelines", "models", "storage", "best_burnout_model.pt")
         if os.path.exists(model_path):
             burnout_predictor.load_model(model_path)
         logger.info("BurnoutPredictor pronto.")
@@ -76,35 +62,55 @@ async def startup_event():
         logger.info("SentimentAnalyzer pronto.")
     except Exception as exc:
         logger.exception("Falha ao inicializar SentimentAnalyzer: %s", exc)
-        sentiment_analyzer = SentimentAnalyzer()
+        sentiment_analyzer = None
 
     try:
         emotional_support_ai = EmotionalSupportAI()
         logger.info("EmotionalSupportAI pronto.")
     except Exception as exc:
         logger.exception("Falha ao inicializar EmotionalSupportAI: %s", exc)
-        emotional_support_ai = EmotionalSupportAI()
+        emotional_support_ai = None
 
     try:
         recommendation_engine = RecommendationEngine()
         logger.info("RecommendationEngine pronto.")
     except Exception as exc:
         logger.exception("Falha ao inicializar RecommendationEngine: %s", exc)
-        recommendation_engine = RecommendationEngine()
+        recommendation_engine = None
 
     try:
         wellbeing_forecaster = WellbeingForecaster()
         logger.info("WellbeingForecaster pronto.")
     except Exception as exc:
         logger.exception("Falha ao inicializar WellbeingForecaster: %s", exc)
-        wellbeing_forecaster = WellbeingForecaster()
+        wellbeing_forecaster = None
 
     try:
         fatigue_detector = FatigueDetector()
         logger.info("FatigueDetector pronto.")
     except Exception as exc:
         logger.exception("Falha ao inicializar FatigueDetector: %s", exc)
-        fatigue_detector = FatigueDetector()
+        fatigue_detector = None
+    
+    yield
+    
+    logger.info("Encerrando serviços de IA...")
+
+
+app = FastAPI(
+    title="WorkWell AI API",
+    description="API de Inteligência Artificial para prevenção de burnout e bem-estar corporativo",
+    version="1.0.0",
+    lifespan=lifespan
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class CheckinData(BaseModel):
@@ -252,12 +258,61 @@ async def predict_burnout(request: BurnoutPredictionRequest):
         
         prediction = burnout_predictor.predict(X[-1])
         
+        num_classes = len(prediction['probabilities'])
+        max_prob = max(prediction['probabilities'].values())
+        
+        if num_classes == 1 or max_prob < 0.3:
+            last_checkin_raw = request.checkins[-1]
+            
+            stress = float(last_checkin_raw.nivel_stress)
+            horas_trabalhadas = float(last_checkin_raw.horas_trabalhadas)
+            horas_sono = float(last_checkin_raw.horas_sono or 7.0)
+            score_bemestar = float(last_checkin_raw.score_bemestar or 60.0)
+            
+            stress_component = (stress / 10.0) * 40
+            work_component = min(horas_trabalhadas / 16.0, 1.0) * 20
+            sleep_component = max(0.0, (8 - horas_sono) / 8.0) * 20
+            wellbeing_component = max(0.0, (100 - score_bemestar) / 100.0) * 20
+            
+            risk_score_total = stress_component + work_component + sleep_component + wellbeing_component
+            
+            if risk_score_total < 25:
+                risk_class = "baixo"
+            elif risk_score_total < 50:
+                risk_class = "medio"
+            elif risk_score_total < 75:
+                risk_class = "alto"
+            else:
+                risk_class = "critico"
+            
+            risk_score = risk_score_total / 100.0
+            
+            risk_map = {"baixo": 0.0, "medio": 0.33, "alto": 0.66, "critico": 1.0}
+            probabilities = {
+                "baixo": 0.0,
+                "medio": 0.0,
+                "alto": 0.0,
+                "critico": 0.0
+            }
+            probabilities[risk_class] = 1.0
+            
+            prediction = {
+                "predicted_class": risk_class,
+                "probabilities": probabilities,
+                "risk_score": risk_score
+            }
+        
         recommendations = []
         if prediction['predicted_class'] in ['alto', 'critico']:
             recommendations = [
                 "Considere reduzir horas de trabalho",
                 "Pratique técnicas de mindfulness",
                 "Busque apoio profissional se necessário"
+            ]
+        elif prediction['predicted_class'] == 'medio':
+            recommendations = [
+                "Monitore seus níveis de stress",
+                "Mantenha um equilíbrio entre trabalho e descanso"
             ]
         
         return BurnoutPredictionResponse(
