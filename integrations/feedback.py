@@ -111,12 +111,10 @@ class FeedbackSystem:
         if not recent_feedback:
             return {}
         
-        # Análise de recomendações
         rec_feedback = [f for f in recent_feedback if f['type'] == 'recommendation']
         avg_rating = np.mean([f['rating'] for f in rec_feedback]) if rec_feedback else 0
         completion_rate = sum(1 for f in rec_feedback if f['completed']) / len(rec_feedback) if rec_feedback else 0
         
-        # Análise de predições
         pred_feedback = [f for f in recent_feedback if f['type'] == 'prediction']
         accuracy_rate = sum(1 for f in pred_feedback if f['was_accurate']) / len(pred_feedback) if pred_feedback else 0
         
@@ -262,8 +260,7 @@ class ContinuousLearning:
             Dicionário com resultado da atualização
         """
         logger.info(f"Atualizando modelo {model_name} com {len(feedback_data)} feedbacks")
-        
-        # Simulação - em produção, implementar atualização real
+
         update_result = {
             'model_name': model_name,
             'n_feedback_samples': len(feedback_data),
@@ -320,25 +317,21 @@ class ContinuousLearning:
     
     def _analyze_improvement_trend(self) -> str:
         """Analisa tendência de melhoria."""
-        # Simplificado - em produção, analisar métricas reais
         return "stable"
 
 
 if __name__ == "__main__":
     from datetime import timedelta
-    
-    # Exemplo de uso
+
     feedback_system = FeedbackSystem()
-    
-    # Submeter feedback
+
     feedback_system.submit_recommendation_feedback(
         user_id=1,
         recommendation_id="rec_001",
         rating=4.5,
         completed=True
     )
-    
-    # Analisar tendências
+
     trends = feedback_system.analyze_feedback_trends()
     print(f"Tendências: {trends}")
 

@@ -14,8 +14,8 @@ try:
 
     _VISION_AVAILABLE = True
 except ImportError:
-    cv2 = None  # type: ignore
-    mp = None  # type: ignore
+    cv2 = None  
+    mp = None  
     _VISION_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
@@ -41,46 +41,37 @@ class FatigueDetector:
                 min_tracking_confidence=0.5
             )
         
-        # Pontos de referência para olhos (MediaPipe)
         self.LEFT_EYE_INDICES = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246]
         self.RIGHT_EYE_INDICES = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398]
         
-        # Histórico para análise temporal
         self.blink_history = deque(maxlen=30)
         self.head_pose_history = deque(maxlen=30)
         self.eye_closure_history = deque(maxlen=30)
         
-        # Modelo CNN para classificação
         self.fatigue_model = None
         
     def calculate_eye_aspect_ratio(self, landmarks, eye_indices: List[int]) -> float:
         """Calcula Eye Aspect Ratio (EAR) para detectar piscadas."""
         eye_points = np.array([[landmarks[i].x, landmarks[i].y] for i in eye_indices])
         
-        # Distâncias verticais
         vertical_1 = np.linalg.norm(eye_points[1] - eye_points[5])
         vertical_2 = np.linalg.norm(eye_points[2] - eye_points[4])
         
-        # Distância horizontal
         horizontal = np.linalg.norm(eye_points[0] - eye_points[3])
         
-        # EAR
         ear = (vertical_1 + vertical_2) / (2.0 * horizontal)
         return ear
     
     def calculate_head_pose(self, landmarks) -> Dict[str, float]:
         """Calcula pose da cabeça (inclinação, rotação)."""
-        # Pontos de referência para pose
         nose_tip = landmarks[1]
         chin = landmarks[175]
         left_eye = landmarks[33]
         right_eye = landmarks[263]
         
-        # Vetores
         eye_vector = np.array([right_eye.x - left_eye.x, right_eye.y - left_eye.y])
         face_vector = np.array([chin.x - nose_tip.x, chin.y - nose_tip.y])
         
-        # Ângulos
         eye_angle = np.arctan2(eye_vector[1], eye_vector[0]) * 180 / np.pi
         face_angle = np.arctan2(face_vector[1], face_vector[0]) * 180 / np.pi
         
@@ -97,13 +88,11 @@ class FatigueDetector:
         
         avg_ear = (left_ear + right_ear) / 2.0
         
-        # Threshold para piscada (ajustável)
         blink_threshold = 0.25
         is_blinking = avg_ear < blink_threshold
         
         self.blink_history.append(avg_ear)
         
-        # Calcular frequência de piscadas
         if len(self.blink_history) >= 10:
             recent_blinks = [ear < blink_threshold for ear in list(self.blink_history)[-10:]]
             blink_rate = sum(recent_blinks) / len(recent_blinks)
@@ -120,16 +109,13 @@ class FatigueDetector:
     
     def analyze_facial_expressions(self, landmarks) -> Dict:
         """Analisa expressões faciais indicativas de fadiga."""
-        # Pontos para boca (bocejo)
         mouth_points = [61, 84, 17, 314, 405, 320, 307, 375, 321, 308, 324, 318]
         mouth_landmarks = np.array([[landmarks[i].x, landmarks[i].y] for i in mouth_points])
         
-        # Abertura da boca
         mouth_height = np.linalg.norm(mouth_landmarks[2] - mouth_landmarks[10])
         mouth_width = np.linalg.norm(mouth_landmarks[0] - mouth_landmarks[6])
         mouth_ratio = mouth_height / (mouth_width + 1e-6)
         
-        # Detecção de bocejo
         yawn_threshold = 0.5
         is_yawning = mouth_ratio > yawn_threshold
         
@@ -166,17 +152,14 @@ class FatigueDetector:
         
         landmarks = results.multi_face_landmarks[0].landmark
         
-        # Análises
         blink_data = self.detect_blinks(landmarks)
         head_pose = self.calculate_head_pose(landmarks)
         expressions = self.analyze_facial_expressions(landmarks)
         
-        # Calcular score de fadiga
         fatigue_score = self._calculate_fatigue_score(
             blink_data, head_pose, expressions
         )
         
-        # Classificar nível de fadiga
         fatigue_level = self._classify_fatigue_level(fatigue_score)
         
         return {
@@ -198,26 +181,22 @@ class FatigueDetector:
         """Calcula score composto de fadiga (0-100)."""
         score = 0.0
         
-        # Fator 1: Frequência de piscadas (baixa = fadiga)
         blink_rate = blink_data.get('blink_rate', 0.5)
-        if blink_rate < 0.1:  # Muito poucas piscadas
+        if blink_rate < 0.1:
             score += 30
         elif blink_rate < 0.2:
             score += 15
         
-        # Fator 2: EAR médio (baixo = olhos fechados)
         avg_ear = blink_data.get('ear', 0.3)
         if avg_ear < 0.2:
             score += 25
         elif avg_ear < 0.25:
             score += 15
         
-        # Fator 3: Inclinação da cabeça
         head_tilt = head_pose.get('head_tilt', 0)
-        if head_tilt > 15:  # Cabeça muito inclinada
+        if head_tilt > 15:
             score += 20
         
-        # Fator 4: Bocejo
         if expressions.get('is_yawning', False):
             score += 25
         
@@ -259,10 +238,8 @@ class FatigueDetector:
             if not ret:
                 break
             
-            # Processar frame
             result = self.process_frame(frame)
             
-            # Desenhar landmarks (opcional, para debug)
             if result.get('face_detected') and result.get('landmarks'):
                 mp_drawing = mp.solutions.drawing_utils
                 mp_drawing.draw_landmarks(
@@ -277,7 +254,6 @@ class FatigueDetector:
                     )
                 )
             
-            # Adicionar texto com nível de fadiga
             if result.get('face_detected'):
                 fatigue_level = result.get('fatigue_level', 'unknown')
                 fatigue_score = result.get('fatigue_score', 0)
@@ -292,11 +268,9 @@ class FatigueDetector:
                     2
                 )
             
-            # Callback para processar resultado
             if callback:
                 callback(result)
             
-            # Mostrar frame (opcional)
             cv2.imshow('Fatigue Detection', frame)
             
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -307,13 +281,10 @@ class FatigueDetector:
 
 
 if __name__ == "__main__":
-    # Exemplo de uso
     detector = FatigueDetector()
     
-    # Processar webcam
     def process_result(result):
         if result.get('face_detected'):
             print(f"Fadiga: {result['fatigue_level']} (Score: {result['fatigue_score']:.2f})")
     
     detector.process_video_stream(video_source=0, callback=process_result)
-

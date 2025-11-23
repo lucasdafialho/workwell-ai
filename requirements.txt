@@ -25,6 +25,7 @@ statsmodels>=0.14.0
 # API Framework
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
+gunicorn>=21.2.0
 pydantic>=2.4.0
 pydantic-settings>=2.0.0
 

@@ -124,8 +124,7 @@ class AIMonitoring:
         
         drift_detected = False
         drift_scores = {}
-        
-        # Kolmogorov-Smirnov test para cada feature
+
         if current_data.ndim == 1:
             current_data = current_data.reshape(-1, 1)
             reference_data = reference_data.reshape(-1, 1)
@@ -161,7 +160,6 @@ class AIMonitoring:
     
     def _calculate_precision(self, predictions: List, actuals: List) -> float:
         """Calcula precision."""
-        # Simplificado - em produção, usar métricas apropriadas
         return self._calculate_accuracy(predictions, actuals)
     
     def _calculate_recall(self, predictions: List, actuals: List) -> float:
@@ -199,7 +197,6 @@ class VisualizationDashboard:
         Returns:
             Figura Plotly
         """
-        # Preparar dados
         pivot_data = data.pivot_table(
             index='departamento',
             columns='data_checkin',
@@ -244,8 +241,7 @@ class VisualizationDashboard:
             Figura Plotly
         """
         fig = go.Figure()
-        
-        # Dados históricos
+
         fig.add_trace(go.Scatter(
             x=historical['date'],
             y=historical['value'],
@@ -253,8 +249,7 @@ class VisualizationDashboard:
             name='Histórico',
             line=dict(color='blue')
         ))
-        
-        # Previsão
+
         fig.add_trace(go.Scatter(
             x=forecast['date'],
             y=forecast['predicted'],
@@ -262,8 +257,7 @@ class VisualizationDashboard:
             name='Previsão',
             line=dict(color='green', dash='dash')
         ))
-        
-        # Intervalo de confiança
+
         fig.add_trace(go.Scatter(
             x=forecast['date'],
             y=forecast['upper'],
@@ -356,19 +350,14 @@ class VisualizationDashboard:
         
         model_names = list(metrics.keys())
         
-        # Accuracy
         accuracies = [metrics[m].get('accuracy', 0) for m in model_names]
         fig.add_trace(go.Bar(x=model_names, y=accuracies, name='Accuracy'), row=1, col=1)
         
-        # Precision
         precisions = [metrics[m].get('precision', 0) for m in model_names]
         fig.add_trace(go.Bar(x=model_names, y=precisions, name='Precision'), row=1, col=2)
-        
-        # Recall
         recalls = [metrics[m].get('recall', 0) for m in model_names]
         fig.add_trace(go.Bar(x=model_names, y=recalls, name='Recall'), row=2, col=1)
-        
-        # F1
+
         f1_scores = [metrics[m].get('f1_score', 0) for m in model_names]
         fig.add_trace(go.Bar(x=model_names, y=f1_scores, name='F1 Score'), row=2, col=2)
         
@@ -385,17 +374,14 @@ class VisualizationDashboard:
 
 
 if __name__ == "__main__":
-    # Exemplo de uso
     monitoring = AIMonitoring()
-    
-    # Log predições
+
     monitoring.log_prediction(
         model_name="burnout_predictor",
         prediction={"value": 0.75, "class": "alto"},
         actual=0.70
     )
-    
-    # Calcular métricas
+
     metrics = monitoring.calculate_metrics("burnout_predictor")
     print(f"Métricas: {metrics}")
 

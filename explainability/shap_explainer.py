@@ -50,12 +50,10 @@ class ModelExplainer:
             Dicionário com explicações
         """
         logger.info("Gerando explicações SHAP")
-        
-        # Criar explainer
+
         if background_data is None:
-            background_data = X[:100]  # Usar amostra como background
-        
-        # Para modelos PyTorch
+            background_data = X[:100]  
+
         if isinstance(self.model, torch.nn.Module):
             def model_wrapper(x):
                 self.model.eval()

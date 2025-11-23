@@ -6,7 +6,6 @@ import requests
 import json
 from datetime import datetime
 
-# URL base da API
 BASE_URL = "http://localhost:8000"
 
 def test_burnout_prediction():
@@ -120,16 +119,14 @@ if __name__ == "__main__":
     print("=" * 60)
     print("TESTANDO API WORKWELL AI")
     print("=" * 60)
-    
-    # Health check primeiro
+
     try:
         test_health()
     except Exception as e:
         print(f"\nErro ao conectar à API: {e}")
         print("Certifique-se de que a API está rodando: uvicorn api.main:app")
         exit(1)
-    
-    # Testar endpoints
+ 
     try:
         test_burnout_prediction()
         test_sentiment_analysis()

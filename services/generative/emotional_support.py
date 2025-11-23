@@ -120,10 +120,9 @@ class EmotionalSupportAI:
 
 if __name__ == "__main__":
     assistant = EmotionalSupportAI()
-    example = assistant.chat(
+    example_response = assistant.chat(
         user_id=1,
         message="Tenho me sentido muito cansado e ansioso com tantos prazos.",
         context={"recent_checkins": [{"nivel_stress": 8, "horas_trabalhadas": 10}], "wellbeing_score": 45},
     )
-    print("Resposta:\n", example["response"])
-
+    print("Resposta:\n", example_response["response"])

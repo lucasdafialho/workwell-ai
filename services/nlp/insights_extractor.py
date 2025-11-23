@@ -32,8 +32,7 @@ class NLPInsightsExtractor:
             language: Idioma ('pt' para português)
         """
         self.language = language
-        
-        # Carregar modelo spaCy
+
         try:
             if language == "pt":
                 self.nlp = spacy.load("pt_core_news_sm")
@@ -42,8 +41,7 @@ class NLPInsightsExtractor:
         except OSError:
             logger.warning("Modelo spaCy não encontrado. Execute: python -m spacy download pt_core_news_sm")
             self.nlp = None
-        
-        # Padrões para detecção
+
         self.stress_patterns = [
             r'\b(sobrecarregado|sobrecarga|estressado|pressão|deadline|urgente)\b',
             r'\b(não consigo|não dá|impossível|difícil demais)\b',
@@ -90,12 +88,10 @@ class NLPInsightsExtractor:
                     all_entities['DATE'].append(ent.text)
                 elif ent.label_ == 'MONEY':
                     all_entities['MONEY'].append(ent.text)
-                
-                # Detectar projetos (padrão customizado)
+
                 if 'projeto' in ent.text.lower() or 'project' in ent.text.lower():
                     all_entities['PROJECT'].append(ent.text)
-        
-        # Contar frequências
+
         entity_counts = {
             'people': Counter(all_entities['PERSON']).most_common(10),
             'organizations': Counter(all_entities['ORG']).most_common(10),
@@ -121,11 +117,9 @@ class NLPInsightsExtractor:
             Dicionário com tópicos e palavras-chave
         """
         logger.info(f"Executando topic modeling com LDA ({n_topics} tópicos)")
-        
-        # Preparar textos
+
         processed_texts = [self._preprocess_text(text) for text in texts]
-        
-        # Vectorização
+
         vectorizer = CountVectorizer(
             max_features=100,
             stop_words='english',
@@ -133,16 +127,14 @@ class NLPInsightsExtractor:
             max_df=0.95
         )
         doc_term_matrix = vectorizer.fit_transform(processed_texts)
-        
-        # LDA
+
         lda = LatentDirichletAllocation(
             n_components=n_topics,
             random_state=42,
             max_iter=10
         )
         lda.fit(doc_term_matrix)
-        
-        # Extrair tópicos
+
         feature_names = vectorizer.get_feature_names_out()
         topics = []
         
@@ -157,8 +149,7 @@ class NLPInsightsExtractor:
                 'weights': top_weights.tolist(),
                 'name': self._name_topic(top_words)
             })
-        
-        # Distribuição de tópicos por documento
+
         doc_topics = lda.transform(doc_term_matrix)
         
         return {
@@ -184,8 +175,7 @@ class NLPInsightsExtractor:
         
         for i, text in enumerate(texts):
             text_lower = text.lower()
-            
-            # Verificar padrões de sobrecarga
+
             for pattern in self.stress_patterns:
                 if re.search(pattern, text_lower, re.IGNORECASE):
                     overload_indicators.append({
@@ -195,8 +185,7 @@ class NLPInsightsExtractor:
                         'severity': 'high' if 'demais' in text_lower or 'impossível' in text_lower else 'medium'
                     })
                     break
-            
-            # Verificar padrões de satisfação
+
             for pattern in self.satisfaction_patterns:
                 if re.search(pattern, text_lower, re.IGNORECASE):
                     satisfaction_indicators.append({
@@ -280,20 +269,17 @@ class NLPInsightsExtractor:
             'user_sentiment_distribution': {},
             'overload_by_user': {}
         }
-        
-        # Analisar cada usuário
+
         all_texts = []
         for user_id, texts in texts_by_user.items():
             all_texts.extend(texts)
-            
-            # Detectar sobrecarga por usuário
+
             overload = self.detect_overload_language(texts)
             team_insights['overload_by_user'][user_id] = {
                 'overload_ratio': overload['overload_ratio'],
                 'overload_count': overload['overload_count']
             }
-        
-        # Tópicos comuns
+
         if len(all_texts) >= 5:
             topics = self.topic_modeling_lda(all_texts, n_topics=5)
             team_insights['common_themes'] = [
@@ -322,20 +308,17 @@ class NLPInsightsExtractor:
             Dicionário com correlações identificadas
         """
         logger.info("Analisando correlações linguagem-burnout")
-        
-        # Agrupar textos por nível de burnout
+
         high_burnout_texts = [
             texts[i] for i, score in enumerate(burnout_scores) if score >= 75
         ]
         low_burnout_texts = [
             texts[i] for i, score in enumerate(burnout_scores) if score < 50
         ]
-        
-        # Extrair palavras-chave de cada grupo
+
         high_burnout_words = self._extract_keywords(high_burnout_texts)
         low_burnout_words = self._extract_keywords(low_burnout_texts)
-        
-        # Palavras distintivas
+
         high_only = set(high_burnout_words.keys()) - set(low_burnout_words.keys())
         low_only = set(low_burnout_words.keys()) - set(high_burnout_words.keys())
         
@@ -351,15 +334,12 @@ class NLPInsightsExtractor:
     
     def _preprocess_text(self, text: str) -> str:
         """Preprocessa texto para análise."""
-        # Remover caracteres especiais
         text = re.sub(r'[^\w\s]', '', text)
-        # Converter para minúsculas
         text = text.lower()
         return text
     
     def _name_topic(self, words: List[str]) -> str:
         """Gera nome descritivo para tópico baseado em palavras-chave."""
-        # Mapear palavras comuns para nomes de tópicos
         topic_mapping = {
             'trabalho': 'Trabalho e Projetos',
             'stress': 'Stress e Sobrecarga',
@@ -378,7 +358,6 @@ class NLPInsightsExtractor:
     def _extract_keywords(self, texts: List[str], top_n: int = 20) -> Dict[str, int]:
         """Extrai palavras-chave mais frequentes."""
         if self.nlp is None:
-            # Fallback simples
             all_words = []
             for text in texts:
                 words = re.findall(r'\b\w+\b', text.lower())
@@ -404,15 +383,11 @@ class NLPInsightsExtractor:
     ) -> List[str]:
         """Gera insights sobre correlações."""
         insights = []
-        
-        # Palavras mais frequentes em alto burnout
         top_high = sorted(high_words.items(), key=lambda x: x[1], reverse=True)[:5]
         if top_high:
             insights.append(
                 f"Palavras mais associadas a alto burnout: {', '.join([w[0] for w in top_high])}"
             )
-        
-        # Palavras mais frequentes em baixo burnout
         top_low = sorted(low_words.items(), key=lambda x: x[1], reverse=True)[:5]
         if top_low:
             insights.append(
@@ -423,7 +398,6 @@ class NLPInsightsExtractor:
 
 
 if __name__ == "__main__":
-    # Exemplo de uso
     extractor = NLPInsightsExtractor()
     
     sample_texts = [
@@ -431,12 +405,8 @@ if __name__ == "__main__":
         "Trabalhei 12 horas hoje e ainda não terminei tudo.",
         "Estou satisfeito com o progresso da equipe esta semana."
     ]
-    
-    # Extrair entidades
     entities = extractor.extract_named_entities(sample_texts)
     print(f"Entidades: {entities}")
-    
-    # Detectar sobrecarga
     overload = extractor.detect_overload_language(sample_texts)
     print(f"Sobrecarga detectada: {overload['overload_detected']}")
 

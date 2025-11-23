@@ -1,6 +1,6 @@
 # Guia Rápido: Como Treinar os Modelos
 
-## 🎯 Método Mais Simples (Recomendado)
+##  Método Mais Simples (Recomendado)
 
 ```bash
 # 1. Gerar dados sintéticos
@@ -15,7 +15,7 @@ Ou tudo de uma vez:
 python pipelines/train_all.py
 ```
 
-## 📊 O Que Cada Script Faz
+## O Que Cada Script Faz
 
 ### `generate_data.py`
 - Gera dados sintéticos realistas de check-ins
@@ -37,7 +37,7 @@ python pipelines/train_all.py
 - Treina sistema de recomendação
 - Prepara modelos collaborative e content-based
 
-## 🔄 Fluxo Completo
+##  Fluxo Completo
 
 ```bash
 # Passo 1: Gerar dados (se necessário)
@@ -56,7 +56,7 @@ python main.py api
 python main.py test
 ```
 
-## ⚡ Comandos Rápidos
+##  Comandos Rápidos
 
 ```bash
 # Tudo de uma vez
@@ -69,7 +69,7 @@ python pipelines/train_burnout.py
 python pipelines/generate_data.py
 ```
 
-## 📝 Dados Necessários
+##  Dados Necessários
 
 ### Para Burnout (LSTM):
 - Arquivo: `data/raw/checkins.csv`
@@ -81,7 +81,7 @@ python pipelines/generate_data.py
 - Colunas: `user_id`, `item_id`, `rating`, `timestamp`
 - Mínimo: 100+ interações
 
-## ✅ Verificação
+##  Verificação
 
 Após treinar, verifique:
 ```bash
@@ -92,7 +92,7 @@ ls models/storage/best_burnout_model.pt
 python -c "from models.burnout.lstm_model import BurnoutPredictor; p = BurnoutPredictor(); p.load_model('models/storage/best_burnout_model.pt'); print('OK!')"
 ```
 
-## 🆘 Problemas Comuns
+##  Problemas Comuns
 
 **"Arquivo não encontrado"**
 → Execute `python pipelines/generate_data.py` primeiro
@@ -103,7 +103,5 @@ python -c "from models.burnout.lstm_model import BurnoutPredictor; p = BurnoutPr
 **"Dados insuficientes"**
 → Gere mais dados ou reduza sequence_length
 
-## 📚 Mais Informações
 
-Veja `TRAINING_GUIDE.md` para guia completo e detalhado.
 

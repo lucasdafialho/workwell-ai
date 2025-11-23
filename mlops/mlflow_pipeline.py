@@ -28,8 +28,7 @@ class MLflowPipeline:
         """
         self.tracking_uri = tracking_uri or os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
         mlflow.set_tracking_uri(self.tracking_uri)
-        
-        # Criar ou obter experimento
+
         try:
             experiment_id = mlflow.create_experiment(experiment_name)
             logger.info(f"Experimento '{experiment_name}' criado")
@@ -107,8 +106,7 @@ class MLflowPipeline:
             Dicionário com métricas de validação
         """
         metrics = metrics_func(model, validation_data)
-        
-        # Verificar thresholds
+
         min_accuracy = 0.7
         if metrics.get('accuracy', 0) < min_accuracy:
             raise ValueError(f"Accuracy abaixo do threshold: {metrics['accuracy']}")
@@ -138,16 +136,12 @@ def train_and_log_burnout_model(
     pipeline = MLflowPipeline()
     
     with pipeline.start_run(run_name=f"burnout_lstm_{datetime.now().strftime('%Y%m%d_%H%M%S')}"):
-        # Log parâmetros
         pipeline.log_model_params(params)
-        
-        # Log métricas
+
         pipeline.log_metrics(metrics)
-        
-        # Log modelo
+
         pipeline.log_pytorch_model(model, "burnout_model")
-        
-        # Registrar modelo
+
         model_uri = f"runs:/{mlflow.active_run().info.run_id}/burnout_model"
         pipeline.register_model(model_uri, "burnout-predictor")
         
@@ -155,19 +149,15 @@ def train_and_log_burnout_model(
 
 
 if __name__ == "__main__":
-    # Exemplo de uso
     pipeline = MLflowPipeline()
     
-    # Iniciar run
     with pipeline.start_run():
-        # Log parâmetros
         pipeline.log_model_params({
             "learning_rate": 0.001,
             "batch_size": 32,
             "epochs": 100
         })
         
-        # Log métricas
         pipeline.log_metrics({
             "train_loss": 0.5,
             "val_loss": 0.6,

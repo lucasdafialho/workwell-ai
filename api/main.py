@@ -14,7 +14,6 @@ import logging
 import os
 from dotenv import load_dotenv
 
-# Importar serviços de IA
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -36,19 +35,16 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Em produção, especificar origens
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Security
 security = HTTPBearer()
 
-# Inicializar serviços (singleton)
 burnout_predictor = None
 sentiment_analyzer = None
 emotional_support_ai = None
@@ -65,7 +61,6 @@ async def startup_event():
     
     logger.info("Inicializando serviços de IA...")
     
-    # Burnout predictor
     try:
         burnout_predictor = BurnoutPredictor()
         model_path = "models/storage/best_burnout_model.pt"
@@ -76,7 +71,6 @@ async def startup_event():
         logger.exception("Falha ao inicializar BurnoutPredictor: %s", exc)
         burnout_predictor = None
 
-    # Sentiment analyzer (com fallback interno)
     try:
         sentiment_analyzer = SentimentAnalyzer()
         logger.info("SentimentAnalyzer pronto.")
@@ -84,7 +78,6 @@ async def startup_event():
         logger.exception("Falha ao inicializar SentimentAnalyzer: %s", exc)
         sentiment_analyzer = SentimentAnalyzer()
 
-    # Emotional support
     try:
         emotional_support_ai = EmotionalSupportAI()
         logger.info("EmotionalSupportAI pronto.")
@@ -92,7 +85,6 @@ async def startup_event():
         logger.exception("Falha ao inicializar EmotionalSupportAI: %s", exc)
         emotional_support_ai = EmotionalSupportAI()
 
-    # Recommendation engine
     try:
         recommendation_engine = RecommendationEngine()
         logger.info("RecommendationEngine pronto.")
@@ -100,7 +92,6 @@ async def startup_event():
         logger.exception("Falha ao inicializar RecommendationEngine: %s", exc)
         recommendation_engine = RecommendationEngine()
 
-    # Wellbeing forecaster
     try:
         wellbeing_forecaster = WellbeingForecaster()
         logger.info("WellbeingForecaster pronto.")
@@ -108,7 +99,6 @@ async def startup_event():
         logger.exception("Falha ao inicializar WellbeingForecaster: %s", exc)
         wellbeing_forecaster = WellbeingForecaster()
 
-    # Fatigue detector
     try:
         fatigue_detector = FatigueDetector()
         logger.info("FatigueDetector pronto.")
@@ -117,7 +107,6 @@ async def startup_event():
         fatigue_detector = FatigueDetector()
 
 
-# Schemas
 class CheckinData(BaseModel):
     """Dados de check-in para análise."""
     usuario_id: int
@@ -217,8 +206,6 @@ class FeedbackRequest(BaseModel):
     completed: bool = True
 
 
-# Endpoints
-
 @app.get("/")
 async def root():
     """Health check."""
@@ -254,7 +241,6 @@ async def predict_burnout(request: BurnoutPredictionRequest):
         raise HTTPException(status_code=503, detail="Serviço de predição não disponível")
     
     try:
-        # Preparar sequência
         import pandas as pd
         df = pd.DataFrame([c.dict() for c in request.checkins])
 
@@ -264,10 +250,8 @@ async def predict_burnout(request: BurnoutPredictionRequest):
         if len(X) == 0:
             raise HTTPException(status_code=400, detail="Dados insuficientes para predição")
         
-        # Fazer predição
         prediction = burnout_predictor.predict(X[-1])
         
-        # Gerar recomendações básicas
         recommendations = []
         if prediction['predicted_class'] in ['alto', 'critico']:
             recommendations = [
@@ -305,14 +289,11 @@ async def analyze_sentiment(request: SentimentAnalysisRequest):
         risk_keywords_combined = {}
         
         for text in request.texts:
-            # Análise básica
             sentiment = sentiment_analyzer.analyze_sentiment(text)
             
-            # Análise multi-emoção
             emotions = sentiment_analyzer.analyze_multi_emotion(text)
             all_emotions.extend(list(emotions['emotions'].keys()))
             
-            # Palavras-chave de risco
             risk = sentiment_analyzer.detect_risk_keywords(text)
             for risk_level, data in risk['risk_keywords'].items():
                 if risk_level not in risk_keywords_combined:
@@ -327,12 +308,9 @@ async def analyze_sentiment(request: SentimentAnalysisRequest):
                 "risk_level": risk['risk_level']
             })
         
-        # Sentimento geral
         from collections import Counter
         sentiment_counts = Counter([r['sentiment'] for r in results])
         overall_sentiment = sentiment_counts.most_common(1)[0][0] if sentiment_counts else 'neutro'
-        
-        # Emoções dominantes
         emotion_counts = Counter(all_emotions)
         dominant_emotions = [emotion for emotion, _ in emotion_counts.most_common(5)]
         
@@ -489,4 +467,3 @@ if __name__ == "__main__":
         port=int(os.getenv("API_PORT", 8000)),
         reload=os.getenv("API_RELOAD", "true").lower() == "true"
     )
-

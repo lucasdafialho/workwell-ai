@@ -67,13 +67,11 @@ class PrivacyProtection:
         
         for field in fields_to_anonymize:
             if field in anonymized:
-                # Hash do valor
                 if isinstance(anonymized[field], str):
                     anonymized[field] = hashlib.sha256(
                         anonymized[field].encode()
                     ).hexdigest()[:16]
                 elif isinstance(anonymized[field], (int, float)):
-                    # Adicionar ruído
                     anonymized[field] = self.add_noise_to_aggregates(
                         float(anonymized[field])
                     )
@@ -97,15 +95,13 @@ class PrivacyProtection:
         Returns:
             True se satisfaz k-anonimidade
         """
-        # Agrupar por quasi-identifiers
         groups = {}
         for record in dataset:
             key = tuple(record.get(qi, None) for qi in quasi_identifiers)
             if key not in groups:
                 groups[key] = []
             groups[key].append(record)
-        
-        # Verificar se todos os grupos têm pelo menos k elementos
+
         min_group_size = min(len(group) for group in groups.values())
         
         return min_group_size >= k
@@ -148,33 +144,25 @@ class FederatedLearning:
         logger.info(f"Executando rodada federada com {len(client_data)} clientes")
         
         client_weights = {}
-        
-        # Treinar modelo em cada cliente
+
         for client_id, data in client_data.items():
             logger.info(f"Treinando cliente {client_id}")
             
-            # Criar modelo local
             local_model = model_class()
-            
-            # Treinar localmente (simulação)
-            # Em produção, isso rodaria no dispositivo do cliente
+
             local_model.fit(data)
-            
-            # Obter pesos do modelo
+
             if hasattr(local_model, 'coef_'):
                 client_weights[client_id] = {
                     'weights': local_model.coef_,
                     'n_samples': len(data)
                 }
-        
-        # Agregar pesos (FedAvg)
+
         aggregated_weights = self._federated_averaging(client_weights)
-        
-        # Atualizar modelo global
+
         if self.global_model is None:
             self.global_model = model_class()
-        
-        # Aplicar pesos agregados
+
         if hasattr(self.global_model, 'coef_'):
             self.global_model.coef_ = aggregated_weights
         
@@ -195,8 +183,7 @@ class FederatedLearning:
             Pesos agregados
         """
         total_samples = sum(w['n_samples'] for w in client_weights.values())
-        
-        # Média ponderada por número de amostras
+
         aggregated = None
         
         for client_id, weights_data in client_weights.items():
@@ -228,11 +215,9 @@ class DataEncryption:
         Returns:
             Pesos criptografados
         """
-        # Simulação - em produção, usar biblioteca de criptografia adequada
         import pickle
         serialized = pickle.dumps(weights)
-        
-        # Hash simples (em produção, usar AES)
+
         key_hash = hashlib.sha256(key.encode()).digest()
         encrypted = bytes(a ^ b for a, b in zip(serialized, key_hash * (len(serialized) // len(key_hash) + 1)))
         
@@ -251,8 +236,7 @@ class DataEncryption:
             Pesos descriptografados
         """
         import pickle
-        
-        # Descriptografar
+
         key_hash = hashlib.sha256(key.encode()).digest()
         decrypted = bytes(a ^ b for a, b in zip(encrypted, key_hash * (len(encrypted) // len(key_hash) + 1)))
         
@@ -286,8 +270,7 @@ class AccessControl:
             True se tem permissão
         """
         permission_key = f"{user_id}:{resource_type}:{action}"
-        
-        # Log de acesso
+
         self.access_logs.append({
             'user_id': user_id,
             'resource_type': resource_type,
@@ -316,10 +299,8 @@ class AccessControl:
 
 
 if __name__ == "__main__":
-    # Exemplo de uso
     privacy = PrivacyProtection(epsilon=1.0)
-    
-    # Adicionar ruído a agregação
+
     original_value = 50.5
     noisy_value = privacy.add_noise_to_aggregates(original_value)
     print(f"Original: {original_value}, Com ruído: {noisy_value}")

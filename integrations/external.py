@@ -160,8 +160,7 @@ class WearablesIntegration:
         start_date: datetime,
         end_date: datetime
     ) -> List[Dict]:
-        """
-        Busca dados de batimento cardíaco.
+        """Busca dados de batimento cardíaco.
         
         Args:
             user_id: ID do usuário
@@ -171,10 +170,8 @@ class WearablesIntegration:
         Returns:
             Lista de registros de batimento cardíaco
         """
-        # Simulação - em produção, fazer chamada real à API
         logger.info(f"Buscando dados de batimento cardíaco para usuário {user_id}")
         
-        # Placeholder
         return [
             {
                 "timestamp": datetime.now().isoformat(),
@@ -188,8 +185,7 @@ class WearablesIntegration:
         user_id: int,
         date: datetime
     ) -> Dict:
-        """
-        Busca dados de sono.
+        """Busca dados de sono.
         
         Args:
             user_id: ID do usuário
@@ -200,7 +196,6 @@ class WearablesIntegration:
         """
         logger.info(f"Buscando dados de sono para usuário {user_id}")
         
-        # Placeholder
         return {
             "date": date.isoformat(),
             "total_sleep_hours": 7.5,
@@ -219,8 +214,7 @@ class CalendarIntegration:
         start_date: datetime,
         end_date: datetime
     ) -> List[Dict]:
-        """
-        Obtém períodos ocupados do calendário.
+        """Obtém períodos ocupados do calendário.
         
         Args:
             user_id: ID do usuário
@@ -230,7 +224,6 @@ class CalendarIntegration:
         Returns:
             Lista de períodos ocupados
         """
-        # Simulação
         return [
             {
                 "start": start_date.isoformat(),
@@ -272,7 +265,6 @@ class ExternalIntegrations:
         if "teams" in channels:
             tasks.append(self.teams.send_alert(user_id, "info", str(insights)))
         
-        # Executar em paralelo
         results = await asyncio.gather(*tasks, return_exceptions=True)
         
         logger.info(f"Insights enviados para usuário {user_id} através de {channels}")
@@ -280,15 +272,16 @@ class ExternalIntegrations:
 
 
 if __name__ == "__main__":
-    import os
-    # Exemplo de uso
-    integrations = ExternalIntegrations()
-    
-    insights = {
-        "stress_level": 7,
-        "wellbeing_score": 65,
-        "recommendations": "Considere fazer uma pausa"
-    }
-    
-    # asyncio.run(integrations.send_daily_insights(1, insights))
+    async def main():
+        integrations = ExternalIntegrations()
+        
+        insights_example = {
+            "stress_level": 7,
+            "wellbeing_score": 65,
+            "recommendations": "Considere fazer uma pausa"
+        }
+        
+        await integrations.send_daily_insights(1, insights_example, channels=["slack"])
 
+    # Para executar o exemplo, descomente a linha abaixo
+    # asyncio.run(main())

@@ -43,11 +43,10 @@ def main():
     
     elif args.command == 'train':
         print(f"Treinando modelo(s): {args.model}")
-        # Importar e executar train_all diretamente
         import subprocess
         cmd = ['python', 'pipelines/train_all.py', '--model', args.model]
         if args.model == 'all':
-            cmd.append('--skip-data')  # Assumir que dados já existem se usando main.py
+            cmd.append('--skip-data')
         subprocess.run(cmd)
     
     elif args.command == 'api':

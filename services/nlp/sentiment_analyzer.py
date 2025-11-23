@@ -22,8 +22,6 @@ try:
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     TRANSFORMERS_AVAILABLE = False
-
-# Tornar wordcloud e matplotlib opcionais
 try:
     from wordcloud import WordCloud
     import matplotlib.pyplot as plt
@@ -69,7 +67,7 @@ class SentimentAnalyzer:
                 self.tokenizer = AutoTokenizer.from_pretrained(model_name)
                 self.model = AutoModelForSequenceClassification.from_pretrained(
                     model_name,
-                    num_labels=3  # positivo, neutro, negativo
+                    num_labels=3 
                 ).to(self.device)
                 self.sentiment_pipeline = pipeline(
                     "sentiment-analysis",
@@ -85,14 +83,12 @@ class SentimentAnalyzer:
         else:
             logger.warning("Transformers não disponível. Usando heurísticas simples para sentimento.")
             self.sentiment_pipeline = None
-        
-        # Emoções específicas para análise multi-label
+
         self.emotions = [
             'alegria', 'tristeza', 'raiva', 'medo', 'ansiedade',
             'esperança', 'frustração', 'satisfação', 'cansaço', 'motivação'
         ]
-        
-        # Aspectos para análise
+
         self.aspects = {
             'trabalho': ['trabalho', 'projeto', 'deadline', 'reunião', 'cliente'],
             'equipe': ['colega', 'equipe', 'chefe', 'gerente', 'colaboração'],
@@ -151,7 +147,6 @@ class SentimentAnalyzer:
         Returns:
             Dicionário com emoções detectadas e scores
         """
-        # Palavras-chave para cada emoção
         emotion_keywords = {
             'alegria': ['feliz', 'alegre', 'satisfeito', 'contente', 'animado'],
             'tristeza': ['triste', 'deprimido', 'melancólico', 'desanimado'],
@@ -171,10 +166,9 @@ class SentimentAnalyzer:
         for emotion, keywords in emotion_keywords.items():
             matches = sum(1 for keyword in keywords if keyword in text_lower)
             if matches > 0:
-                score = min(1.0, matches / len(keywords) * 2)  # Normalizar
+                score = min(1.0, matches / len(keywords) * 2)  
                 detected_emotions[emotion] = score
-        
-        # Análise de sentimento base para contexto
+
         sentiment_result = self.analyze_sentiment(text)
         
         return {
@@ -198,11 +192,9 @@ class SentimentAnalyzer:
         aspect_sentiments = {}
         
         for aspect, keywords in self.aspects.items():
-            # Verificar se aspecto é mencionado
             mentions = [kw for kw in keywords if kw in text_lower]
             
             if mentions:
-                # Extrair sentença relevante
                 sentences = text.split('.')
                 relevant_sentences = [
                     s for s in sentences
@@ -210,7 +202,6 @@ class SentimentAnalyzer:
                 ]
                 
                 if relevant_sentences:
-                    # Analisar sentimento do aspecto
                     aspect_text = '. '.join(relevant_sentences)
                     sentiment = self.analyze_sentiment(aspect_text)
                     
@@ -250,16 +241,13 @@ class SentimentAnalyzer:
         all_aspects = {}
         
         for text in texts:
-            # Sentimento
             sentiment = self.analyze_sentiment(text)
             all_sentiments.append(sentiment['sentiment'])
-            
-            # Emoções
+
             emotions = self.analyze_multi_emotion(text)
             for emotion, score in emotions['emotions'].items():
                 all_emotions[emotion] += score
-            
-            # Aspectos
+
             aspects = self.analyze_aspects(text)
             for aspect, data in aspects['aspects'].items():
                 if aspect not in all_aspects:
@@ -272,8 +260,7 @@ class SentimentAnalyzer:
                 
                 all_aspects[aspect]['mentions'] += 1
                 all_aspects[aspect][data['sentiment']] += 1
-        
-        # Calcular distribuição de sentimentos
+
         sentiment_dist = Counter(all_sentiments)
         total = len(texts)
         
@@ -373,11 +360,9 @@ class SentimentAnalyzer:
         if not WORDCLOUD_AVAILABLE:
             logger.warning("wordcloud não disponível. Instale com: pip install wordcloud")
             return
-        
-        # Combinar todos os textos
+
         combined_text = ' '.join(texts)
-        
-        # Gerar word cloud
+
         wordcloud = WordCloud(
             width=800,
             height=400,
@@ -385,8 +370,7 @@ class SentimentAnalyzer:
             max_words=100,
             colormap='viridis'
         ).generate(combined_text)
-        
-        # Salvar
+
         plt.figure(figsize=(10, 5))
         plt.imshow(wordcloud, interpolation='bilinear')
         plt.axis('off')
@@ -427,11 +411,9 @@ class SentimentAnalyzer:
                 'sentiment': sentiment['sentiment'],
                 'score': sentiment['score']
             })
-        
-        # Ordenar por data
+
         sentiment_timeline.sort(key=lambda x: x['date'])
-        
-        # Detectar tendências
+
         if len(sentiment_timeline) >= 3:
             recent_scores = [s['score'] for s in sentiment_timeline[-7:]]
             trend = 'melhorando' if recent_scores[-1] > recent_scores[0] else 'piorando' if recent_scores[-1] < recent_scores[0] else 'estável'
@@ -449,24 +431,19 @@ class SentimentAnalyzer:
 
 
 if __name__ == "__main__":
-    # Exemplo de uso
     analyzer = SentimentAnalyzer()
     
     text = "Estou muito sobrecarregado no trabalho. Os prazos estão impossíveis e não consigo descansar. Estou cansado demais."
-    
-    # Análise básica
+
     sentiment = analyzer.analyze_sentiment(text)
     print(f"Sentimento: {sentiment}")
-    
-    # Análise multi-emoção
+
     emotions = analyzer.analyze_multi_emotion(text)
     print(f"Emoções: {emotions}")
-    
-    # Aspectos
+
     aspects = analyzer.analyze_aspects(text)
     print(f"Aspectos: {aspects}")
-    
-    # Palavras-chave de risco
+
     risk = analyzer.detect_risk_keywords(text)
     print(f"Risco: {risk}")
 
