@@ -2,6 +2,14 @@
 
 Sistema inteligente de prevenção de burnout e otimização de bem-estar corporativo utilizando Deep Learning, Visão Computacional e IA Generativa.
 
+## Vídeo Demonstrativo
+
+Assista ao vídeo demonstrativo do projeto:
+
+[![WorkWell AI - Demonstração](https://img.youtube.com/vi/mikPyT3jW3o/0.jpg)](https://www.youtube.com/watch?v=mikPyT3jW3o)
+
+[Link direto: https://www.youtube.com/watch?v=mikPyT3jW3o](https://www.youtube.com/watch?v=mikPyT3jW3o)
+
 ## Índice
 
 - [Sobre o Projeto](#sobre-o-projeto)
