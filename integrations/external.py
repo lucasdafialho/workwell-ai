@@ -283,5 +283,4 @@ if __name__ == "__main__":
         
         await integrations.send_daily_insights(1, insights_example, channels=["slack"])
 
-    # Para executar o exemplo, descomente a linha abaixo
-    # asyncio.run(main())
+    asyncio.run(main())

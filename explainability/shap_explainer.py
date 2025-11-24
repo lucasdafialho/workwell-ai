@@ -64,17 +64,13 @@ class ModelExplainer:
             
             explainer = shap.KernelExplainer(model_wrapper, background_data)
         else:
-            # Para modelos scikit-learn
             explainer = shap.KernelExplainer(self.model.predict_proba, background_data)
         
-        # Calcular SHAP values
-        shap_values = explainer.shap_values(X[:10], nsamples=max_evals)  # Limitar para performance
+        shap_values = explainer.shap_values(X[:10], nsamples=max_evals)
         
-        # Processar resultados
         if isinstance(shap_values, list):
-            shap_values = shap_values[1]  # Classe positiva
+            shap_values = shap_values[1]
         
-        # Calcular importância média das features
         feature_importance = np.abs(shap_values).mean(axis=0)
         
         explanations = {
@@ -112,14 +108,12 @@ class ModelExplainer:
         """
         logger.info(f"Gerando explicação LIME para instância {instance_idx}")
         
-        # Criar explainer LIME
         explainer = lime.lime_tabular.LimeTabularExplainer(
             X,
             feature_names=self.feature_names,
             mode='regression' if not hasattr(self.model, 'predict_proba') else 'classification'
         )
         
-        # Função wrapper para o modelo
         def model_predict(x):
             if isinstance(self.model, torch.nn.Module):
                 self.model.eval()
@@ -130,14 +124,12 @@ class ModelExplainer:
             else:
                 return self.model.predict_proba(x)
         
-        # Gerar explicação
         explanation = explainer.explain_instance(
             X[instance_idx],
             model_predict,
             num_features=num_features
         )
         
-        # Processar resultados
         exp_list = explanation.as_list()
         
         explanations = {
@@ -183,14 +175,12 @@ class ModelExplainer:
         text = f"O modelo previu um risco de burnout '{predicted_class}' "
         text += f"com {probabilities.get(predicted_class, 0)*100:.1f}% de confiança.\n\n"
         
-        # Features mais importantes
         top_features = shap_explanation.get('top_features', [])[:5]
         if top_features:
             text += "Os fatores mais importantes para esta predição foram:\n"
             for i, feat in enumerate(top_features, 1):
                 text += f"{i}. {feat['feature']}: contribuição de {feat['importance']:.3f}\n"
         
-        # Explicação LIME se disponível
         if lime_explanation:
             text += "\nExplicação local:\n"
             positive = lime_explanation.get('top_positive_features', [])
@@ -225,7 +215,6 @@ class ModelExplainer:
         if not feature_importance:
             return
         
-        # Ordenar por importância
         sorted_features = sorted(
             feature_importance.items(),
             key=lambda x: x[1],
@@ -234,7 +223,6 @@ class ModelExplainer:
         
         features, importances = zip(*sorted_features)
         
-        # Criar gráfico
         plt.figure(figsize=(10, 6))
         plt.barh(range(len(features)), importances)
         plt.yticks(range(len(features)), features)
@@ -266,7 +254,6 @@ class ModelExplainer:
         """
         logger.info("Gerando explicação contrafactual")
         
-        # Simulação simples - em produção, usar otimização
         current_pred = self._predict_single(instance)
         
         changes = []
@@ -275,7 +262,6 @@ class ModelExplainer:
                 min_val, max_val = feature_ranges[feature_name]
                 current_val = instance[i]
                 
-                # Testar mudança para valor médio
                 test_instance = instance.copy()
                 test_instance[i] = (min_val + max_val) / 2
                 test_pred = self._predict_single(test_instance)
@@ -309,7 +295,5 @@ class ModelExplainer:
 
 
 if __name__ == "__main__":
-    # Exemplo de uso
-    # (requer modelo treinado)
     pass
 

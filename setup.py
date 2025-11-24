@@ -85,17 +85,13 @@ def main():
     print("WORKWELL AI - SETUP")
     print("=" * 60)
     
-    # Verificar dependências
     if not check_dependencies():
         sys.exit(1)
     
-    # Criar diretórios
     setup_directories()
     
-    # Criar .env
     create_env_file()
     
-    # Baixar modelos NLP
     download_nlp_models()
     
     print("\n" + "=" * 60)

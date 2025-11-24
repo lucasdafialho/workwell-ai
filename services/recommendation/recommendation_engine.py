@@ -36,19 +36,15 @@ class RecommendationEngine:
     """
     
     def __init__(self):
-        # Dados de usuários e interações
-        self.user_interactions = defaultdict(list)  # {user_id: [interactions]}
+        self.user_interactions = defaultdict(list)
         self.item_features = {}
         self.user_profiles = {}
         
-        # Modelos
         self.collaborative_model = None
         self.content_model = None
         
-        # Multi-Armed Bandit
-        self.bandit_arms = {}  # {item_id: {count, reward_sum}}
+        self.bandit_arms = {}
         
-        # Catálogo de itens recomendáveis
         self.items_catalog = self._initialize_catalog()
         
     def _initialize_catalog(self) -> Dict:
@@ -119,7 +115,6 @@ class RecommendationEngine:
         """
         logger.info("Treinando modelo de collaborative filtering")
         
-        # Criar matriz usuário-item
         user_item_matrix = interactions_df.pivot_table(
             index='user_id',
             columns='item_id',
@@ -127,7 +122,6 @@ class RecommendationEngine:
             fill_value=0
         )
         
-        # Calcular similaridade entre usuários
         user_similarity = cosine_similarity(user_item_matrix)
         
         self.collaborative_model = {
@@ -147,18 +141,15 @@ class RecommendationEngine:
         """
         logger.info("Treinando modelo content-based")
         
-        # Combinar features textuais
         items_df['combined_features'] = (
             items_df.get('tags', '').fillna('') + ' ' +
             items_df.get('description', '').fillna('') + ' ' +
             items_df.get('title', '').fillna('')
         )
         
-        # TF-IDF
         vectorizer = TfidfVectorizer(max_features=100)
         tfidf_matrix = vectorizer.fit_transform(items_df['combined_features'])
         
-        # Similaridade entre itens
         item_similarity = cosine_similarity(tfidf_matrix)
         
         self.content_model = {
@@ -182,20 +173,16 @@ class RecommendationEngine:
         user_similarity = self.collaborative_model['user_similarity']
         
         if user_id not in user_item_matrix.index:
-            # Usuário novo - usar média geral
             return self._get_popular_items(n_recommendations)
         
-        # Encontrar usuários similares
         user_idx = user_item_matrix.index.get_loc(user_id)
         similar_users_idx = np.argsort(user_similarity[user_idx])[-10:-1][::-1]
         
-        # Itens que usuários similares gostaram
         recommendations = {}
         for similar_idx in similar_users_idx:
             similar_user_id = user_item_matrix.index[similar_idx]
             similarity_score = user_similarity[user_idx, similar_idx]
             
-            # Itens que o usuário similar avaliou bem mas o usuário atual não
             user_items = set(user_item_matrix.loc[user_id][user_item_matrix.loc[user_id] > 0].index)
             similar_user_items = user_item_matrix.loc[similar_user_id]
             
@@ -205,7 +192,6 @@ class RecommendationEngine:
                         recommendations[item_id] = 0
                     recommendations[item_id] += rating * similarity_score
         
-        # Ordenar e retornar top N
         sorted_items = sorted(recommendations.items(), key=lambda x: x[1], reverse=True)
         
         recommendations: List[Recommendation] = []
@@ -225,32 +211,27 @@ class RecommendationEngine:
         if self.content_model is None:
             return []
         
-        # Extrair preferências do usuário
         user_tags = user_profile.get('preferred_tags', [])
         user_stress_level = user_profile.get('stress_level', 5)
         user_available_time = user_profile.get('available_time', 10)
         
         recommendations = []
         
-        # Buscar itens que correspondem ao perfil
         for category, items in self.items_catalog.items():
             for item in items:
                 score = 0.0
                 reasons = []
                 
-                # Match de tags
                 item_tags = item.get('tags', [])
                 tag_matches = sum(1 for tag in user_tags if tag in item_tags)
                 if tag_matches > 0:
                     score += tag_matches * 0.3
                     reasons.append(f"Corresponde às suas preferências")
                 
-                # Match de contexto (stress level)
                 if user_stress_level >= 7 and 'stress' in item_tags:
                     score += 0.3
                     reasons.append("Recomendado para alto stress")
                 
-                # Match de duração
                 item_duration = item.get('duration', 10)
                 if item_duration <= user_available_time:
                     score += 0.2
@@ -266,7 +247,6 @@ class RecommendationEngine:
                     if rec:
                         recommendations.append(rec)
         
-        # Ordenar por score
         recommendations.sort(key=lambda x: x.score, reverse=True)
         
         return recommendations[:n_recommendations]
@@ -281,7 +261,6 @@ class RecommendationEngine:
         Gera recomendações usando Multi-Armed Bandit.
         Balanceia exploração (novos itens) vs exploitation (itens conhecidos).
         """
-        # Inicializar bandit arms se necessário
         all_items = []
         for items in self.items_catalog.values():
             all_items.extend(items)
@@ -291,10 +270,9 @@ class RecommendationEngine:
                 self.bandit_arms[item['id']] = {
                     'count': 0,
                     'reward_sum': 0.0,
-                    'avg_reward': 0.5  # Prior otimista
+                    'avg_reward': 0.5
                 }
         
-        # Calcular UCB (Upper Confidence Bound) para cada item
         total_pulls = sum(arm['count'] for arm in self.bandit_arms.values())
         
         item_scores = []
@@ -310,16 +288,13 @@ class RecommendationEngine:
             
             item_scores.append((item_id, float(ucb_score)))
         
-        # Ordenar por UCB score
         item_scores.sort(key=lambda x: x[1], reverse=True)
         
-        # Selecionar top N com mix de exploração/exploitation
         n_explore = int(n_recommendations * exploration_rate)
         n_exploit = n_recommendations - n_explore
         
         recommendations = []
         
-        # Exploitation: itens com melhor histórico
         exploit_items = sorted(
             self.bandit_arms.items(),
             key=lambda x: x[1]['avg_reward'],
@@ -336,7 +311,6 @@ class RecommendationEngine:
             if rec:
                 recommendations.append(rec)
         
-        # Exploração: itens menos testados mas promissores
         explore_items = [
             (item_id, score) for item_id, score in item_scores
             if item_id not in [r.item_id for r in recommendations]
@@ -373,17 +347,14 @@ class RecommendationEngine:
         Returns:
             Lista de recomendações
         """
-        # Pesos para cada método
         w_collaborative = 0.3
         w_content = 0.4
         w_bandit = 0.3
         
-        # Obter recomendações de cada método
         collab_recs = self.collaborative_recommend(user_id, n_recommendations * 2)
         content_recs = self.content_based_recommend(user_id, user_profile, n_recommendations * 2)
         bandit_recs = self.multi_armed_bandit_recommend(user_id, n_recommendations * 2)
         
-        # Combinar e re-ranquear
         combined_scores = defaultdict(float)
         
         for rec in collab_recs:
@@ -395,7 +366,6 @@ class RecommendationEngine:
         for rec in bandit_recs:
             combined_scores[rec.item_id] += rec.score * w_bandit
         
-        # Aplicar contexto temporal
         if context:
             current_hour = datetime.now().hour
             for item_id in combined_scores:
@@ -407,7 +377,6 @@ class RecommendationEngine:
                     elif best_time == 'tarde' and 12 <= current_hour < 18:
                         combined_scores[item_id] *= 1.2
         
-        # Ordenar e retornar top N
         sorted_items = sorted(combined_scores.items(), key=lambda x: x[1], reverse=True)
         
         final_recommendations = []
@@ -438,7 +407,6 @@ class RecommendationEngine:
         Atualiza feedback do usuário para melhorar recomendações futuras.
         Usa reinforcement learning para ajustar estratégias.
         """
-        # Atualizar interações do usuário
         self.user_interactions[user_id].append({
             'item_id': item_id,
             'rating': rating,
@@ -446,7 +414,6 @@ class RecommendationEngine:
             'timestamp': datetime.now()
         })
         
-        # Atualizar Multi-Armed Bandit
         if item_id in self.bandit_arms:
             arm = self.bandit_arms[item_id]
             arm['count'] += 1
@@ -526,7 +493,6 @@ class RecommendationEngine:
 
 
 if __name__ == "__main__":
-    # Exemplo de uso
     engine = RecommendationEngine()
     
     user_profile = {
