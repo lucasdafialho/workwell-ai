@@ -65,9 +65,10 @@ O burnout afeta milhões de profissionais globalmente, custando bilhões em prod
 - Detecção de linguagem indicativa de burnout e depressão
 
 ### IA Generativa
-- Chatbot de suporte emocional com Gemini 2.5 Flash Lite
-- RAG (Retrieval-Augmented Generation) com base de conhecimento em saúde mental
+- Chatbot de suporte emocional baseado em regras e conhecimento estruturado
+- Base de conhecimento em saúde mental com detecção de palavras-chave
 - Respostas empáticas e contextualmente apropriadas
+- Detecção de crises e encaminhamento para recursos apropriados
 
 ### Sistema de Recomendação
 - Engine híbrida (collaborative + content-based filtering)
@@ -99,9 +100,9 @@ O burnout afeta milhões de profissionais globalmente, custando bilhões em prod
 - **PIL/Pillow**: Manipulação de imagens
 
 ### NLP e IA Generativa
-- **LangChain**: Framework para aplicações LLM
-- **Google Gemini API**: Modelo generativo
-- **OpenAI API**: GPT-4 (opcional)
+- **LangChain**: Framework para aplicações LLM (suporte para futuras integrações)
+- **Google Gemini API**: Suporte para integração futura
+- **OpenAI API**: Suporte para integração futura
 - **NLTK/spaCy**: Processamento de texto
 
 ### MLOps e Infraestrutura
@@ -169,108 +170,68 @@ Backend .NET (via REST API)
 ```
 workwell-ai/
 ├── api/                          # API FastAPI
-│   ├── main.py                   # Entry point da API
-│   ├── routes/                   # Endpoints REST
-│   │   ├── predictions.py        # Predições de burnout
-│   │   ├── recommendations.py    # Recomendações personalizadas
-│   │   ├── chatbot.py           # Chatbot terapêutico
-│   │   └── health.py            # Health checks
-│   ├── schemas/                  # Pydantic models
-│   ├── dependencies.py           # Dependency injection
-│   └── middleware.py             # Middlewares (auth, logging)
+│   └── main.py                   # Entry point da API com todos os endpoints
 │
 ├── models/                       # Modelos de ML/DL
 │   ├── burnout/                  # Modelo LSTM para burnout
-│   │   ├── model.py              # Arquitetura do modelo
-│   │   ├── train.py              # Script de treinamento
-│   │   ├── predict.py            # Inferência
-│   │   └── config.yaml           # Hiperparâmetros
-│   ├── sentiment/                # Modelo BERT para sentimento
-│   ├── fatigue/                  # Modelo CNN para fadiga
-│   ├── timeseries/               # Modelo Prophet
-│   └── base/                     # Classes base e interfaces
+│   │   └── lstm_model.py         # Arquitetura, treinamento e inferência
+│   └── timeseries/               # Modelo Prophet
+│       └── prophet_forecaster.py # Previsão de séries temporais
 │
 ├── pipelines/                    # Pipelines de ETL e treinamento
-│   ├── etl/                      # Extract, Transform, Load
-│   ├── feature_engineering/      # Criação de features
+│   ├── etl_pipeline.py           # Pipeline ETL completo
+│   ├── generate_data.py          # Geração de dados sintéticos
 │   ├── train_all.py              # Treina todos os modelos
-│   └── generate_data.py          # Geração de dados sintéticos
+│   ├── train_burnout.py          # Treinamento do modelo de burnout
+│   ├── train_sentiment.py        # Treinamento do modelo de sentimento
+│   ├── train_recommendation.py   # Treinamento do sistema de recomendação
+│   └── models/                   # Armazenamento de modelos treinados
+│       └── storage/
 │
 ├── services/                     # Serviços de IA
 │   ├── generative/               # IA generativa
-│   │   ├── chatbot.py            # Chatbot com RAG
-│   │   └── prompt_templates.py   # Templates de prompts
+│   │   └── emotional_support.py  # Chatbot de suporte emocional
 │   ├── recommendation/           # Sistema de recomendação
-│   │   ├── hybrid_recommender.py
-│   │   └── contextual_bandits.py
+│   │   └── recommendation_engine.py # Engine híbrida completa
 │   └── nlp/                      # Processamento NLP
-│       ├── embeddings.py
-│       └── sentiment_analyzer.py
+│       ├── sentiment_analyzer.py # Análise de sentimento com BERT
+│       └── insights_extractor.py # Extração de insights
 │
 ├── mlops/                        # Pipeline MLOps
-│   ├── mlflow_config.py          # Configuração MLflow
-│   ├── model_registry.py         # Registry de modelos
-│   ├── experiment_tracking.py    # Tracking de experimentos
-│   └── deployment/               # Scripts de deploy
+│   └── mlflow_pipeline.py        # Pipeline MLflow completo
 │
 ├── vision/                       # Visão computacional
-│   ├── fatigue_detector.py       # Detector de fadiga facial
-│   ├── face_analyzer.py          # Análise facial
-│   └── video_processor.py        # Processamento de vídeo
+│   └── fatigue_detector.py       # Detector de fadiga facial com MediaPipe
 │
 ├── explainability/               # Explicabilidade de modelos
-│   ├── shap_explainer.py         # SHAP values
-│   ├── lime_explainer.py         # LIME explanations
-│   └── visualization.py          # Visualizações
+│   └── shap_explainer.py         # SHAP values e LIME
 │
 ├── privacy/                      # Privacidade e segurança
-│   ├── differential_privacy.py   # Differential Privacy
-│   ├── federated_learning.py     # Federated Learning
-│   ├── encryption.py             # Criptografia
-│   └── anonymization.py          # Anonimização de dados
+│   └── security.py               # Differential Privacy e proteções
 │
 ├── monitoring/                   # Monitoramento e métricas
-│   ├── drift_detector.py         # Detecção de drift
-│   ├── performance_monitor.py    # Monitoramento de performance
-│   └── alerting.py               # Sistema de alertas
+│   └── visualizations.py         # Visualizações e monitoramento
 │
 ├── integrations/                 # Integrações externas
-│   ├── dotnet_client.py          # Cliente para backend .NET
-│   ├── database.py               # Conexão com bancos de dados
-│   └── redis_client.py           # Cliente Redis
+│   ├── database.py               # Conexão PostgreSQL
+│   ├── redis_client.py           # Cliente Redis
+│   ├── external.py               # Integrações externas
+│   └── feedback.py               # Sistema de feedback
 │
-├── notebooks/                    # Notebooks Jupyter
-│   ├── 01_exploratory_analysis.ipynb
-│   ├── 02_model_training.ipynb
-│   ├── 03_evaluation.ipynb
-│   └── 04_deployment.ipynb
+├── scripts/                      # Scripts utilitários
+│   └── init_database.py          # Inicialização do banco de dados
 │
-├── utils/                        # Utilitários e helpers
-│   ├── config.py                 # Configurações globais
-│   ├── logger.py                 # Sistema de logging
-│   └── validators.py             # Validadores
-│
-├── tests/                        # Testes unitários e integração
-│   ├── unit/
-│   ├── integration/
-│   └── e2e/
-│
-├── docker/                       # Dockerfiles e compose
-│   ├── Dockerfile
-│   ├── docker-compose.yml
-│   └── docker-compose.dev.yml
+├── examples/                     # Exemplos de uso
+│   └── api_usage.py              # Exemplos de uso da API
 │
 ├── docs/                         # Documentação adicional
-│   ├── API.md
-│   ├── MODELS.md
-│   └── DEPLOYMENT.md
+│   └── DATABASE_SETUP.md         # Guia de configuração do banco
 │
 ├── requirements.txt              # Dependências Python
-├── requirements-dev.txt          # Dependências de desenvolvimento
-├── pyproject.toml               # Configuração do projeto
-├── .env.example                 # Exemplo de variáveis de ambiente
-├── .gitignore
-└── README.md
+├── setup.py                      # Script de setup
+├── main.py                       # Entry point principal
+├── .env.example                  # Exemplo de variáveis de ambiente
+└── README.md                     # Este arquivo
 ```
 
 ## Pré-requisitos
@@ -288,8 +249,8 @@ workwell-ai/
 - **Produção**: 16GB+ RAM, 8+ cores CPU, SSD
 
 ### Chaves de API
-- Google Gemini API Key (obrigatório para chatbot)
-- OpenAI API Key (opcional, alternativa ao Gemini)
+- Google Gemini API Key (opcional, para futuras integrações)
+- OpenAI API Key (opcional, para futuras integrações)
 
 ## Instalação
 
@@ -312,29 +273,12 @@ pip install --upgrade pip
 # Instalar dependências
 pip install -r requirements.txt
 
-# Instalar dependências de desenvolvimento (opcional)
-pip install -r requirements-dev.txt
 
 # Configurar variáveis de ambiente
 cp .env.example .env
 # Editar .env com suas credenciais
 ```
 
-### Método 2: Docker (Recomendado)
-
-```bash
-# Build das imagens
-docker-compose build
-
-# Iniciar serviços
-docker-compose up -d
-
-# Verificar logs
-docker-compose logs -f workwell-ai
-
-# Parar serviços
-docker-compose down
-```
 
 ### Verificar Instalação
 
@@ -346,8 +290,6 @@ python --version
 python -c "import torch; print(f'PyTorch: {torch.__version__}')"
 python -c "import transformers; print(f'Transformers: {transformers.__version__}')"
 
-# Executar testes
-pytest tests/
 ```
 
 ## Configuração
@@ -464,10 +406,10 @@ redis-cli ping
 
 **Uso**:
 ```python
-from models.burnout.predict import BurnoutPredictor
+from models.burnout.lstm_model import BurnoutPredictor
 
 predictor = BurnoutPredictor()
-result = predictor.predict(user_id=123, days_ahead=30)
+result = predictor.predict(sequence_data)
 # {
 #   "burnout_risk": 0.72,
 #   "confidence": 0.89,
@@ -517,41 +459,41 @@ result = detector.analyze_frame(video_frame)
 
 ### 3. IA Generativa para Suporte Emocional
 
-**Descrição**: Chatbot terapêutico com Gemini 1.5 Pro usando RAG (Retrieval-Augmented Generation).
+**Descrição**: Chatbot de suporte emocional baseado em regras e conhecimento estruturado.
 
 **Características**:
-- Base de conhecimento: 500+ artigos sobre saúde mental
-- Embeddings: text-embedding-004 (Google)
-- Vector Store: ChromaDB
-- Context Window: 32k tokens
-- Temperature: 0.7 (balanceado)
+- Base de conhecimento estruturada com tópicos de saúde mental
+- Detecção de palavras-chave e contexto
+- Respostas empáticas pré-definidas
+- Histórico de conversação por usuário
 
 **Funcionalidades**:
 - Conversação empática e contextual
-- Técnicas de CBT (Cognitive Behavioral Therapy)
-- Sugestões de coping strategies
+- Sugestões de coping strategies baseadas em tópicos
 - Detecção de crise (encaminhamento profissional)
-- Multilíngue (PT-BR, EN)
+- Suporte em português brasileiro
+- Histórico de conversas mantido por sessão
 
 **Safeguards**:
-- Detecção de conteúdo sensível
 - Disclaimer de não substituir terapia profissional
 - Escalonamento para recursos de crise
+- Respostas baseadas em conhecimento validado
 
 **Uso**:
 ```python
-from services.generative.chatbot import TherapeuticChatbot
+from services.generative.emotional_support import EmotionalSupportAI
 
-chatbot = TherapeuticChatbot()
+chatbot = EmotionalSupportAI()
 response = chatbot.chat(
     user_id=123,
-    message="Estou me sentindo muito sobrecarregado no trabalho"
+    message="Estou me sentindo muito sobrecarregado no trabalho",
+    context={"stress_level": 8}
 )
 # {
 #   "response": "Entendo que você está se sentindo sobrecarregado...",
-#   "suggestions": ["breathing_exercise", "time_management_tips"],
-#   "sentiment": "negative",
-#   "crisis_detected": False
+#   "sources": ["burnout", "limites"],
+#   "confidence": 0.85,
+#   "timestamp": "2025-01-15T10:30:00Z"
 # }
 ```
 
@@ -626,10 +568,14 @@ result = analyzer.analyze("Não aguento mais essa rotina exaustiva")
 
 **Uso**:
 ```python
-from services.recommendation.hybrid_recommender import HybridRecommender
+from services.recommendation.recommendation_engine import RecommendationEngine
 
-recommender = HybridRecommender()
-recommendations = recommender.get_recommendations(user_id=123, top_k=5)
+recommender = RecommendationEngine()
+recommendations = recommender.hybrid_recommend(
+    user_id=123,
+    user_profile={"stress_tolerance": 7, "available_time": 15},
+    n_recommendations=5
+)
 # [
 #   {
 #     "item_id": 42,
@@ -662,10 +608,10 @@ recommendations = recommender.get_recommendations(user_id=123, top_k=5)
 
 **Uso**:
 ```python
-from models.timeseries.prophet_model import WellbeingForecaster
+from models.timeseries.prophet_forecaster import WellbeingForecaster
 
 forecaster = WellbeingForecaster()
-forecast = forecaster.predict(user_id=123, periods=30)
+forecast = forecaster.forecast(user_id=123, periods=30)
 # {
 #   "forecast": [7.2, 7.1, 6.8, ...],
 #   "lower_bound": [6.5, 6.4, 6.1, ...],
@@ -689,22 +635,15 @@ python pipelines/train_all.py
 # 1. Gerar dados sintéticos para treinamento
 python pipelines/generate_data.py --samples 10000
 
-# 2. Processar features
-python pipelines/feature_engineering/process_features.py
-
-# 3. Treinar todos os modelos
-python pipelines/train_all.py --skip-data
+# 2. Treinar todos os modelos
+python pipelines/train_all.py
 
 # 4. Treinar modelo específico
 python pipelines/train_burnout.py --epochs 50 --batch-size 32
 python pipelines/train_sentiment.py --model bertimbau
 python pipelines/train_recommendation.py --algorithm hybrid
 
-# 5. Avaliar modelos
-python pipelines/evaluate_models.py --output reports/
 ```
-
-**Veja `HOW_TO_TRAIN.md` ou `TRAINING_GUIDE.md` para guias detalhados.**
 
 ### Iniciar API FastAPI
 
@@ -718,46 +657,19 @@ uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
 # Método 3: Produção com múltiplos workers
 uvicorn api.main:app --host 0.0.0.0 --port 8000 --workers 4
 
-# Com Docker
-docker-compose up api
+# Com Docker (quando disponível)
+# docker-compose up api
 ```
 
 Acesse a documentação interativa:
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
-### Executar Notebooks
+### Executar Exemplos
 
 ```bash
-# Iniciar Jupyter
-jupyter notebook notebooks/
-
-# Ou Jupyter Lab
-jupyter lab notebooks/
-
-# Notebooks disponíveis:
-# - 01_exploratory_analysis.ipynb: Análise exploratória de dados
-# - 02_model_training.ipynb: Treinamento passo a passo
-# - 03_evaluation.ipynb: Avaliação e métricas
-# - 04_deployment.ipynb: Deployment e inferência
-```
-
-### Executar Testes
-
-```bash
-# Todos os testes
-pytest
-
-# Testes específicos
-pytest tests/unit/
-pytest tests/integration/
-pytest tests/e2e/
-
-# Com cobertura
-pytest --cov=. --cov-report=html
-
-# Com verbose
-pytest -v
+# Executar exemplo de uso da API
+python examples/api_usage.py
 ```
 
 ## Exemplos de API
@@ -765,13 +677,20 @@ pytest -v
 ### Predição de Burnout
 
 ```bash
-curl -X POST "http://localhost:8000/api/v1/predict/burnout" \
+curl -X POST "http://localhost:8000/api/v1/burnout/predict" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
   -d '{
-    "user_id": 123,
-    "days_ahead": 30,
-    "include_explanation": true
+    "usuario_id": 123,
+    "checkins": [
+      {
+        "usuario_id": 123,
+        "nivel_stress": 8,
+        "horas_trabalhadas": 10.5,
+        "horas_sono": 6.0,
+        "score_bemestar": 45.0
+      }
+    ],
+    "sequence_length": 30
   }'
 ```
 
@@ -813,11 +732,11 @@ Resposta:
 ### Análise de Sentimento
 
 ```bash
-curl -X POST "http://localhost:8000/api/v1/analyze/sentiment" \
+curl -X POST "http://localhost:8000/api/v1/sentiment/analyze" \
   -H "Content-Type: application/json" \
   -d '{
-    "text": "Hoje foi um dia muito desafiador, me sinto exausto",
-    "context": "daily_checkin"
+    "texts": ["Hoje foi um dia muito desafiador, me sinto exausto"],
+    "user_id": 123
   }'
 ```
 
@@ -842,8 +761,16 @@ Resposta:
 ### Recomendações Personalizadas
 
 ```bash
-curl -X GET "http://localhost:8000/api/v1/recommendations/123?top_k=5" \
-  -H "Authorization: Bearer YOUR_TOKEN"
+curl -X POST "http://localhost:8000/api/v1/recommendations" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": 123,
+    "user_profile": {
+      "stress_tolerance": 7,
+      "available_time": 15
+    },
+    "n_recommendations": 5
+  }'
 ```
 
 Resposta:
@@ -878,13 +805,12 @@ Resposta:
 ### Chatbot Terapêutico
 
 ```bash
-curl -X POST "http://localhost:8000/api/v1/chatbot/message" \
+curl -X POST "http://localhost:8000/api/v1/chat/support" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
   -d '{
     "user_id": 123,
     "message": "Estou me sentindo muito sobrecarregado",
-    "session_id": "abc-123"
+    "context": {"stress_level": 8}
   }'
 ```
 
@@ -992,114 +918,47 @@ mlflow server --host 0.0.0.0 --port 5000
 - Versionamento de modelos
 - Model Registry para produção
 
-### Monitoramento de Drift
+### Monitoramento
 
-Sistema automatizado de detecção de drift de dados e performance:
+Sistema de monitoramento implementado em `monitoring/visualizations.py`:
 
 ```python
-from monitoring.drift_detector import DataDriftDetector
+from monitoring.visualizations import AIMonitoring
 
-detector = DataDriftDetector()
-drift_report = detector.check_drift(
-    reference_data=train_data,
-    current_data=production_data
+monitoring = AIMonitoring()
+monitoring.log_prediction(
+    model_name="burnout_predictor",
+    prediction={"value": 0.75},
+    actual=0.72
 )
 
-if drift_report['drift_detected']:
-    # Trigger retraining pipeline
-    trigger_retraining()
+metrics = monitoring.calculate_metrics("burnout_predictor", window_days=7)
 ```
 
 **Métricas Monitoradas**:
-- Distribution shift (KS test, Chi-squared)
-- Performance degradation
-- Data quality issues
-- Anomalias em features
-
-### Prometheus + Grafana
-
-Métricas de infraestrutura e aplicação:
-
-```yaml
-# prometheus.yml
-scrape_configs:
-  - job_name: 'workwell-ai'
-    static_configs:
-      - targets: ['localhost:8000']
-```
-
-**Dashboards**:
-- API metrics (latency, throughput, errors)
-- Model performance metrics
-- Resource utilization
-- Business metrics (predictions, user engagement)
-
-### Alerting
-
-Sistema de alertas configurado para:
-- Performance degradation > 10%
-- API latency > 500ms
-- Error rate > 5%
-- Drift detection
-- High burnout risk predictions (>0.8)
+- Accuracy, Precision, Recall, F1-Score
+- MAE e RMSE para regressão
+- Histórico de predições
+- Detecção de anomalias
 
 ## Privacidade e Segurança
 
-### Differential Privacy
+### Privacidade e Segurança
 
-Implementação de Differential Privacy usando Opacus:
-
-```python
-from privacy.differential_privacy import DPTrainer
-
-trainer = DPTrainer(
-    model=model,
-    epsilon=1.0,  # Privacy budget
-    delta=1e-5,
-    max_grad_norm=1.0
-)
-
-trainer.train(train_dataloader)
-```
-
-**Garantias**:
-- Epsilon = 1.0 (forte privacidade)
-- Delta = 1e-5
-- Ruído calibrado para proteção
-
-### Federated Learning
-
-Treinamento distribuído sem compartilhar dados brutos:
+Implementação de proteções de privacidade em `privacy/security.py`:
 
 ```python
-from privacy.federated_learning import FederatedTrainer
+from privacy.security import PrivacyProtection
 
-fl_trainer = FederatedTrainer(
-    global_model=model,
-    num_clients=10,
-    rounds=50
-)
-
-fl_trainer.federated_training()
+privacy = PrivacyProtection(epsilon=1.0)
+protected_data = privacy.add_noise(sensitive_data)
 ```
 
-### Criptografia
-
-- **Em trânsito**: TLS 1.3
-- **Em repouso**: AES-256
-- **Chaves**: Gerenciamento com HashiCorp Vault
-
-### Anonimização
-
-```python
-from privacy.anonymization import anonymize_user_data
-
-anonymized_data = anonymize_user_data(
-    data=user_data,
-    method='k-anonymity',
-    k=5
-)
-```
+**Funcionalidades**:
+- Differential Privacy com diffprivlib
+- Adição de ruído calibrado
+- Proteção de dados sensíveis
+- Conformidade com LGPD
 
 ### Conformidade LGPD
 
@@ -1117,7 +976,7 @@ anonymized_data = anonymize_user_data(
 
 ```bash
 # Verificar se os modelos foram treinados
-ls -la models/storage/
+ls -la pipelines/models/storage/
 
 # Re-treinar se necessário
 python pipelines/train_all.py
@@ -1136,14 +995,11 @@ python pipelines/train_burnout.py --gradient-accumulation-steps 4
 #### 3. API retorna 503 Service Unavailable
 
 ```bash
-# Verificar se serviços estão rodando
-docker-compose ps
+# Verificar se a API está rodando
+curl http://localhost:8000/health
 
 # Verificar logs
-docker-compose logs -f api
-
-# Reiniciar serviços
-docker-compose restart api
+tail -f logs/workwell-ai.log
 ```
 
 #### 4. Latência alta em produção
@@ -1168,8 +1024,8 @@ psql -h localhost -U workwell_user -d workwell
 # Verificar variáveis de ambiente
 echo $DATABASE_URL
 
-# Resetar conexão
-docker-compose restart postgres
+# Verificar status do PostgreSQL
+psql -h localhost -U workwell_user -d workwell -c "SELECT 1"
 ```
 
 ### Logs e Debugging
@@ -1182,8 +1038,6 @@ tail -f logs/workwell-ai.log
 export LOG_LEVEL=DEBUG
 python main.py api
 
-# Logs do Docker
-docker-compose logs -f --tail=100
 
 # Verificar health da API
 curl http://localhost:8000/health
@@ -1191,20 +1045,9 @@ curl http://localhost:8000/health
 
 ## Documentação
 
-### Documentos Principais
-- [HOW_TO_TRAIN.md](HOW_TO_TRAIN.md): Guia rápido de treinamento
-- [TRAINING_GUIDE.md](TRAINING_GUIDE.md): Guia completo de treinamento de modelos
-- [ARCHITECTURE.md](ARCHITECTURE.md): Arquitetura detalhada do sistema
-- [QUICKSTART.md](QUICKSTART.md): Início rápido para desenvolvedores
-- [API.md](docs/API.md): Documentação completa da API
-- [MODELS.md](docs/MODELS.md): Detalhes técnicos dos modelos
-- [DEPLOYMENT.md](docs/DEPLOYMENT.md): Guia de deployment
-
-### Notebooks Jupyter
-- `notebooks/01_exploratory_analysis.ipynb`: Análise exploratória de dados
-- `notebooks/02_model_training.ipynb`: Processo de treinamento
-- `notebooks/03_evaluation.ipynb`: Avaliação e métricas
-- `notebooks/04_deployment.ipynb`: Deploy e inferência
+### Documentação Disponível
+- [DATABASE_SETUP.md](docs/DATABASE_SETUP.md): Guia de configuração do banco de dados
+- [IMPLEMENTATION_REVIEW.md](IMPLEMENTATION_REVIEW.md): Revisão de implementação
 
 ### API Documentation
 - Swagger UI: http://localhost:8000/docs
@@ -1250,26 +1093,6 @@ O sistema suporta webhooks para notificações assíncronas:
 }
 ```
 
-### SDK Python
-
-```bash
-pip install workwell-ai-sdk
-```
-
-```python
-from workwell_ai import WorkWellAI
-
-client = WorkWellAI(api_key="your_api_key")
-
-# Predição
-result = client.predict_burnout(user_id=123)
-
-# Recomendações
-recommendations = client.get_recommendations(user_id=123, top_k=5)
-
-# Chatbot
-response = client.chat(user_id=123, message="Como lidar com estresse?")
-```
 
 ## Licença
 
